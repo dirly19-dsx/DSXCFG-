@@ -8,6 +8,7 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup // <--- INI YANG KURANG TADI
 import android.view.animation.OvershootInterpolator
 import android.widget.*
 import rikka.shizuku.Shizuku
@@ -26,8 +27,6 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // --- EFEK AWAL MASUK (PETIR BIRU) ---
         setupBaseLayout()
     }
 
@@ -36,7 +35,6 @@ class MainActivity : Activity() {
             setBackgroundColor(colorBlack)
         }
 
-        // Layar Login
         val loginLayout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(60, 60, 60, 60)
@@ -50,7 +48,6 @@ class MainActivity : Activity() {
             typeface = Typeface.create("sans-serif-black", Typeface.BOLD)
             gravity = Gravity.CENTER
             letterSpacing = 0.1f
-            // Efek Glow Biru
             setShadowLayer(25f, 0f, 0f, colorNeonBlue)
         }
 
@@ -84,9 +81,7 @@ class MainActivity : Activity() {
             val key = inputKey.text.toString().trim()
             val validKeys = mapOf("DSX-1JAM-BG" to 1, "DSX-3JAM-PRO" to 3, "DSX-1BULAN-VIP" to 720)
             if (validKeys.containsKey(key)) {
-                // Munculin Petir Biru kalau sukses
                 triggerLightningStrike()
-                // Delay dikit biar animasi petirnya kelihatan baru pindah halaman
                 rootLayout.postDelayed({ showDashboard() }, 800)
             } else {
                 triggerGlitchEffect(rootLayout)
@@ -111,16 +106,13 @@ class MainActivity : Activity() {
         rootLayout.addView(loginLayout)
         setContentView(rootLayout)
 
-        // Animasi Masuk
         loginLayout.alpha = 0f
         loginLayout.translationY = -50f
         loginLayout.animate().alpha(1f).translationY(0f).setDuration(1000).start()
 
-        // Panggil petir pertama kali buka
         rootLayout.postDelayed({ triggerLightningStrike() }, 300)
     }
 
-    // --- HALAMAN DASHBOARD (CYBERPUNK) ---
     private fun showDashboard() {
         val rootLayout = FrameLayout(this).apply {
             setBackgroundColor(colorBlack)
@@ -133,7 +125,6 @@ class MainActivity : Activity() {
             gravity = Gravity.CENTER_HORIZONTAL
         }
 
-        // --- HEADER PANEL ---
         val headerPanel = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             background = createCyberPanel()
@@ -160,19 +151,16 @@ class MainActivity : Activity() {
         headerPanel.addView(title)
         headerPanel.addView(statusText)
 
-        // --- MAIN TOGGLE BUTTON (SAKLAR ON/OFF) ---
         val btnToggle = createCyberButton("⚡ TAP TO ACTIVATE", colorDarkBlue, colorNeonBlue, true)
         btnToggle.textSize = 20f
         val toggleParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
         toggleParams.setMargins(0, 40, 0, 40)
         btnToggle.layoutParams = toggleParams
 
-        // --- ACTION BUTTONS ---
         val btnFF = createCyberButton("LAUNCH FREE FIRE", colorDarkBlue, Color.WHITE, false)
         val btnOpt = createCyberButton("BOOST RAM & CPU", colorDarkBlue, Color.WHITE, false)
         val btnAim = createCyberButton("OVERRIDE TOUCH", colorDarkBlue, Color.WHITE, false)
         val btnDrag = createCyberButton("ZERO DELAY UI", colorDarkBlue, Color.WHITE, false)
-        
         val btnReset = createCyberButton("PURGE SYSTEM", colorDarkBlue, colorRed, true)
 
         val watermarkDash = TextView(this).apply {
@@ -196,7 +184,6 @@ class MainActivity : Activity() {
         rootLayout.addView(scrollView)
         setContentView(rootLayout)
 
-        // Animasi Masuk List
         for (i in 0 until layout.childCount) {
             val child = layout.getChildAt(i)
             child.alpha = 0f
@@ -204,7 +191,6 @@ class MainActivity : Activity() {
             child.animate().alpha(1f).translationX(0f).setStartDelay((i * 100).toLong()).setDuration(500).start()
         }
 
-        // --- AKSI SAKLAR ---
         btnToggle.setOnClickListener {
             isSystemOn = !isSystemOn
             if (isSystemOn) {
@@ -247,27 +233,22 @@ class MainActivity : Activity() {
         }
     }
 
-    // --- ANIMASI PETIR BIRU NYAMBER ---
     private fun triggerLightningStrike() {
         val root = window.decorView as ViewGroup
         
-        // Overlay Biru Kilat
         val flashView = View(this).apply {
             setBackgroundColor(Color.parseColor("#6600F0FF"))
         }
         root.addView(flashView, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
 
-        // Gambar Petir Biru
         val lightningView = LightningView(this)
         root.addView(lightningView, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
 
-        // Animasi Hilang
         flashView.animate().alpha(0f).setDuration(400).withEndAction {
             root.removeView(flashView)
             root.removeView(lightningView)
         }.start()
 
-        // Efek Layar Getar (Glitch Shake)
         val shake = android.view.animation.TranslateAnimation(-10f, 10f, -10f, 10f)
         shake.duration = 300
         shake.repeatCount = 1
@@ -281,7 +262,6 @@ class MainActivity : Activity() {
         view.startAnimation(shake)
     }
 
-    // --- CUSTOM VIEW: PETIR BIRU ---
     inner class LightningView(context: android.content.Context) : View(context) {
         override fun onDraw(canvas: Canvas) {
             super.onDraw(canvas)
@@ -289,13 +269,12 @@ class MainActivity : Activity() {
                 color = Color.WHITE
                 strokeWidth = 8f
                 style = Paint.Style.STROKE
-                setShadowLayer(25f, 0f, 0f, colorNeonBlue) // Glow Biru
+                setShadowLayer(25f, 0f, 0f, colorNeonBlue)
             }
             val path = Path()
             val w = width.toFloat()
             val h = height.toFloat()
             
-            // Gambar 2 Petir Bercabang
             path.moveTo(w * 0.3f, 0f)
             path.lineTo(w * 0.4f, h * 0.4f)
             path.lineTo(w * 0.2f, h * 0.6f)
@@ -310,12 +289,11 @@ class MainActivity : Activity() {
         }
     }
 
-    // --- DESAIN KARTU & TOMBOL CYBERPUNK ---
     private fun createCyberPanel(): GradientDrawable {
         return GradientDrawable().apply {
             setColor(colorDarkBlue)
             setCornerRadius(15f)
-            setStroke(2, colorNeonBlue) // Border biru neon
+            setStroke(2, colorNeonBlue)
         }
     }
 
@@ -324,9 +302,6 @@ class MainActivity : Activity() {
             setColor(bgColor)
             setCornerRadius(10f)
             setStroke(3, strokeColor)
-            if (glow) {
-                // Efek glow di tombol (jika didukung)
-            }
         }
     }
 
@@ -349,7 +324,6 @@ class MainActivity : Activity() {
         }
     }
 
-    // --- EKSEKUSI SHIZUKU ---
     private fun runShell(cmd: String) {
         try {
             if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
@@ -360,4 +334,4 @@ class MainActivity : Activity() {
             }
         } catch (e: Exception) { }
     }
-} 
+}
