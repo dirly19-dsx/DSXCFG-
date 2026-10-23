@@ -3,59 +3,74 @@ package com.dsx.cfg
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Bundle
-import android.widget.*
-import rikka.shizuku.Shizuku
-import android.graphics.Color
-import android.graphics.Typeface
+import android.graphics.*
 import android.graphics.drawable.GradientDrawable
+import android.os.Bundle
 import android.view.Gravity
 import android.view.View
-import android.animation.ObjectAnimator
-import android.animation.AnimatorSet
+import android.view.animation.OvershootInterpolator
+import android.widget.*
+import rikka.shizuku.Shizuku
+import kotlin.random.Random
 
 class MainActivity : Activity() {
 
     private var isSystemOn = false
 
+    // Palet Warna: Hitam & Biru Neon
+    private val colorBlack = Color.parseColor("#050505")
+    private val colorDarkBlue = Color.parseColor("#0A1128")
+    private val colorNeonBlue = Color.parseColor("#00F0FF")
+    private val colorNeonBlueGlow = Color.parseColor("#8800F0FF")
+    private val colorRed = Color.parseColor("#FF0033")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
-        // --- HALAMAN LOGIN ---
-        val layout = LinearLayout(this).apply {
+
+        // --- EFEK AWAL MASUK (PETIR BIRU) ---
+        setupBaseLayout()
+    }
+
+    private fun setupBaseLayout() {
+        val rootLayout = FrameLayout(this).apply {
+            setBackgroundColor(colorBlack)
+        }
+
+        // Layar Login
+        val loginLayout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(60, 60, 60, 60)
-            setBackgroundColor(Color.parseColor("#020105")) // Hitam pekat
             gravity = Gravity.CENTER
         }
 
         val title = TextView(this).apply {
             text = "DSXCFG"
-            setTextColor(Color.parseColor("#CC0000")) // Merah Darah
-            textSize = 50f
-            setTypeface(null, Typeface.BOLD)
+            setTextColor(colorNeonBlue)
+            textSize = 60f
+            typeface = Typeface.create("sans-serif-black", Typeface.BOLD)
             gravity = Gravity.CENTER
-            // Efek Glow Merah
-            setShadowLayer(15f, 0f, 0f, Color.parseColor("#FF0033"))
+            letterSpacing = 0.1f
+            // Efek Glow Biru
+            setShadowLayer(25f, 0f, 0f, colorNeonBlue)
         }
 
         val subTitle = TextView(this).apply {
-            text = "PREMIUM SYSTEM OPTIMIZER"
-            setTextColor(Color.parseColor("#888888"))
+            text = "SYSTEM BREACH PROTOCOL"
+            setTextColor(Color.parseColor("#88FFFFFF"))
             textSize = 14f
-            letterSpacing = 0.2f
+            letterSpacing = 0.3f
             gravity = Gravity.CENTER
             setPadding(0, 10, 0, 80)
         }
 
         val inputKey = EditText(this).apply {
-            hint = "ENTER LICENSE KEY"
-            setTextColor(Color.WHITE)
-            setHintTextColor(Color.GRAY)
-            setBackgroundColor(Color.parseColor("#111115"))
+            hint = "ENTER ACCESS KEY"
+            setTextColor(colorNeonBlue)
+            setHintTextColor(Color.parseColor("#4400F0FF"))
+            setBackgroundColor(colorDarkBlue)
             setPadding(40, 40, 40, 40)
             gravity = Gravity.CENTER
-            letterSpacing = 0.1f
+            letterSpacing = 0.2f
             val params = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
@@ -64,93 +79,111 @@ class MainActivity : Activity() {
             layoutParams = params
         }
 
-        val btnLogin = createPremiumButton("VERIFY ACCESS", "#CC0000", "#FFFFFF")
+        val btnLogin = createCyberButton("INITIALIZE ACCESS", colorDarkBlue, colorNeonBlue, true)
         btnLogin.setOnClickListener {
             val key = inputKey.text.toString().trim()
             val validKeys = mapOf("DSX-1JAM-BG" to 1, "DSX-3JAM-PRO" to 3, "DSX-1BULAN-VIP" to 720)
             if (validKeys.containsKey(key)) {
-                Toast.makeText(this, "ACCESS GRANTED", Toast.LENGTH_SHORT).show()
-                showDashboard()
+                // Munculin Petir Biru kalau sukses
+                triggerLightningStrike()
+                // Delay dikit biar animasi petirnya kelihatan baru pindah halaman
+                rootLayout.postDelayed({ showDashboard() }, 800)
             } else {
-                Toast.makeText(this, "INVALID KEY", Toast.LENGTH_SHORT).show()
+                triggerGlitchEffect(rootLayout)
+                Toast.makeText(this, "ACCESS DENIED", Toast.LENGTH_SHORT).show()
             }
         }
 
         val watermarkLogin = TextView(this).apply {
             text = "WA Admin: 0887437833371\nTikTok: ClayX!"
-            setTextColor(Color.parseColor("#444444"))
+            setTextColor(Color.parseColor("#333333"))
             textSize = 12f
             gravity = Gravity.CENTER
             setPadding(0, 100, 0, 0)
         }
 
-        layout.addView(title)
-        layout.addView(subTitle)
-        layout.addView(inputKey)
-        layout.addView(btnLogin)
-        layout.addView(watermarkLogin)
-        setContentView(layout)
+        loginLayout.addView(title)
+        loginLayout.addView(subTitle)
+        loginLayout.addView(inputKey)
+        loginLayout.addView(btnLogin)
+        loginLayout.addView(watermarkLogin)
+        
+        rootLayout.addView(loginLayout)
+        setContentView(rootLayout)
 
-        // Animasi Masuk (Fade & Slide Up)
-        layout.alpha = 0f
-        layout.translationY = 100f
-        layout.animate().alpha(1f).translationY(0f).setDuration(800).start()
+        // Animasi Masuk
+        loginLayout.alpha = 0f
+        loginLayout.translationY = -50f
+        loginLayout.animate().alpha(1f).translationY(0f).setDuration(1000).start()
+
+        // Panggil petir pertama kali buka
+        rootLayout.postDelayed({ triggerLightningStrike() }, 300)
     }
 
-    // --- HALAMAN DASHBOARD ---
+    // --- HALAMAN DASHBOARD (CYBERPUNK) ---
     private fun showDashboard() {
         val rootLayout = FrameLayout(this).apply {
-            setBackgroundColor(Color.parseColor("#020105"))
+            setBackgroundColor(colorBlack)
         }
-
-        // Efek Petir/Kedipan Merah (Overlay)
-        val lightningOverlay = View(this).apply {
-            setBackgroundColor(Color.parseColor("#55FF0000"))
-            alpha = 0f
-        }
-        rootLayout.addView(lightningOverlay, FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.MATCH_PARENT,
-            FrameLayout.LayoutParams.MATCH_PARENT
-        ))
 
         val scrollView = ScrollView(this)
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(50, 120, 50, 50)
+            setPadding(40, 100, 40, 40)
             gravity = Gravity.CENTER_HORIZONTAL
         }
 
-        val title = TextView(this).apply {
-            text = "DSX DASHBOARD"
-            setTextColor(Color.parseColor("#00FFCC")) // Cyan Neon
-            textSize = 30f
-            setTypeface(null, Typeface.BOLD)
+        // --- HEADER PANEL ---
+        val headerPanel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            background = createCyberPanel()
+            setPadding(40, 40, 40, 40)
             gravity = Gravity.CENTER
-            setShadowLayer(10f, 0f, 0f, Color.parseColor("#00FFCC"))
-            setPadding(0, 0, 0, 60)
+        }
+        
+        val title = TextView(this).apply {
+            text = "DSX CORE"
+            setTextColor(colorNeonBlue)
+            textSize = 28f
+            typeface = Typeface.create("sans-serif-black", Typeface.BOLD)
+            setShadowLayer(10f, 0f, 0f, colorNeonBlue)
+        }
+        
+        val statusText = TextView(this).apply {
+            text = "STATUS: STANDBY"
+            setTextColor(Color.GRAY)
+            textSize = 14f
+            letterSpacing = 0.2f
+            setPadding(0, 10, 0, 0)
         }
 
-        // TOMBOL SAKLAR ON/OFF (Bentuk Pil)
-        val btnToggle = createPremiumButton("TAP TO ACTIVATE", "#1A1A1A", "#FFFFFF")
+        headerPanel.addView(title)
+        headerPanel.addView(statusText)
+
+        // --- MAIN TOGGLE BUTTON (SAKLAR ON/OFF) ---
+        val btnToggle = createCyberButton("⚡ TAP TO ACTIVATE", colorDarkBlue, colorNeonBlue, true)
         btnToggle.textSize = 20f
+        val toggleParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        toggleParams.setMargins(0, 40, 0, 40)
+        btnToggle.layoutParams = toggleParams
+
+        // --- ACTION BUTTONS ---
+        val btnFF = createCyberButton("LAUNCH FREE FIRE", colorDarkBlue, Color.WHITE, false)
+        val btnOpt = createCyberButton("BOOST RAM & CPU", colorDarkBlue, Color.WHITE, false)
+        val btnAim = createCyberButton("OVERRIDE TOUCH", colorDarkBlue, Color.WHITE, false)
+        val btnDrag = createCyberButton("ZERO DELAY UI", colorDarkBlue, Color.WHITE, false)
         
-        // Fitur Tombol Lain
-        val btnFF = createPremiumButton("LAUNCH FREE FIRE", "#00FFCC", "#000000")
-        val btnOpt = createPremiumButton("OPTIMIZE RAM", "#111115", "#FFFFFF")
-        val btnAim = createPremiumButton("AIM SMOOTH", "#111115", "#FFFFFF")
-        val btnDrag = createPremiumButton("EASY DRAG", "#111115", "#FFFFFF")
-        
-        val btnReset = createPremiumButton("RESET SYSTEM", "#CC0000", "#FFFFFF")
+        val btnReset = createCyberButton("PURGE SYSTEM", colorDarkBlue, colorRed, true)
 
         val watermarkDash = TextView(this).apply {
-            text = "Powered by DSX\nWA: 0887437833371 | TT: ClayX!"
-            setTextColor(Color.parseColor("#444444"))
+            text = "POWERED BY DSX PROJECT"
+            setTextColor(Color.parseColor("#333333"))
             textSize = 12f
-            gravity = Gravity.CENTER
-            setPadding(0, 80, 0, 0)
+            letterSpacing = 0.2f
+            setPadding(0, 60, 0, 0)
         }
 
-        layout.addView(title)
+        layout.addView(headerPanel)
         layout.addView(btnToggle)
         layout.addView(btnFF)
         layout.addView(btnOpt)
@@ -163,69 +196,39 @@ class MainActivity : Activity() {
         rootLayout.addView(scrollView)
         setContentView(rootLayout)
 
-        // Animasi Masuk (Fade & Slide Down untuk judul)
-        title.alpha = 0f
-        title.translationY = -50f
-        title.animate().alpha(1f).translationY(0f).setDuration(800).start()
-        
-        // Animasi Tombol Muncul Bergantian (Staggered)
-        val buttons = listOf(btnToggle, btnFF, btnOpt, btnAim, btnDrag, btnReset)
-        buttons.forEachIndexed { index, button ->
-            button.alpha = 0f
-            button.translationY = 50f
-            button.animate().alpha(1f).translationY(0f).setStartDelay((index * 100).toLong()).setDuration(500).start()
+        // Animasi Masuk List
+        for (i in 0 until layout.childCount) {
+            val child = layout.getChildAt(i)
+            child.alpha = 0f
+            child.translationX = -100f
+            child.animate().alpha(1f).translationX(0f).setStartDelay((i * 100).toLong()).setDuration(500).start()
         }
 
-        // --- AKSI TOMBOL ON/OFF ---
+        // --- AKSI SAKLAR ---
         btnToggle.setOnClickListener {
             isSystemOn = !isSystemOn
             if (isSystemOn) {
-                // Animasi Petir Merah
-                val flashAnimator = ObjectAnimator.ofFloat(lightningOverlay, "alpha", 0f, 1f, 0f, 0.8f, 0f)
-                flashAnimator.duration = 400
-                flashAnimator.start()
-
-                // Animasi Tombol Getar (Punch Effect)
-                val scaleX = ObjectAnimator.ofFloat(btnToggle, "scaleX", 1f, 0.9f, 1.1f, 1f)
-                val scaleY = ObjectAnimator.ofFloat(btnToggle, "scaleY", 1f, 0.9f, 1.1f, 1f)
-                val animSet = AnimatorSet()
-                animSet.playTogether(scaleX, scaleY)
-                animSet.duration = 300
-                animSet.start()
-
-                btnToggle.text = "SYSTEM ACTIVE"
-                val bg = GradientDrawable().apply {
-                    setColor(Color.parseColor("#00FF00")) // Hijau Nyala
-                    setCornerRadius(50f)
-                    setStroke(4, Color.parseColor("#88FF88"))
-                }
-                btnToggle.background = bg
-                btnToggle.setTextColor(Color.BLACK)
-
-                // Eksekusi Semua Script Shizuku
+                triggerLightningStrike()
+                btnToggle.text = "⚡ SYSTEM ONLINE"
+                btnToggle.background = createCyberButtonBg(colorDarkBlue, colorNeonBlue, true)
+                btnToggle.setTextColor(colorNeonBlue)
+                statusText.text = "STATUS: OVERCLOCKED"
+                statusText.setTextColor(colorNeonBlue)
+                
                 runShell("am kill-all; pm trim-caches 999G; settings put global low_power 0; cmd power set-fixed-performance-mode-enabled true; settings put secure pointer_speed 7; settings put system pointer_speed 7; settings put global window_animation_scale 0.0; settings put global transition_animation_scale 0.0; settings put global animator_duration_scale 0.0; setprop debug.egl.swapinterval 0; settings put system peak_refresh_rate 120.0; settings put system min_refresh_rate 120.0")
-                Toast.makeText(this, "⚡ SYSTEM BOOSTED ⚡", Toast.LENGTH_SHORT).show()
             } else {
-                btnToggle.text = "TAP TO ACTIVATE"
-                val bg = GradientDrawable().apply {
-                    setColor(Color.parseColor("#1A1A1A"))
-                    setCornerRadius(50f)
-                    setStroke(3, Color.parseColor("#444444"))
-                }
-                btnToggle.background = bg
-                btnToggle.setTextColor(Color.WHITE)
+                btnToggle.text = "⚡ TAP TO ACTIVATE"
+                btnToggle.background = createCyberButtonBg(colorDarkBlue, Color.GRAY, false)
+                btnToggle.setTextColor(Color.GRAY)
+                statusText.text = "STATUS: STANDBY"
+                statusText.setTextColor(Color.GRAY)
                 Toast.makeText(this, "SYSTEM STANDBY", Toast.LENGTH_SHORT).show()
             }
         }
 
-        // --- AKSI BUKA FF ---
         btnFF.setOnClickListener {
             val intent = packageManager.getLaunchIntentForPackage("com.dts.freefireth")
-            if (intent != null) {
-                startActivity(intent)
-            } else {
-                Toast.makeText(this, "Free Fire tidak terinstall!", Toast.LENGTH_SHORT).show()
-            }
+            if (intent != null) startActivity(intent) else Toast.makeText(this, "FF NOT INSTALLED", Toast.LENGTH_SHORT).show()
         }
 
         btnOpt.setOnClickListener { runShell("am kill-all; pm trim-caches 999G") }
@@ -234,47 +237,113 @@ class MainActivity : Activity() {
         
         btnReset.setOnClickListener { 
             isSystemOn = false
-            btnToggle.text = "TAP TO ACTIVATE"
-            val bg = GradientDrawable().apply {
-                setColor(Color.parseColor("#1A1A1A"))
-                setCornerRadius(50f)
-                setStroke(3, Color.parseColor("#444444"))
-            }
-            btnToggle.background = bg
-            btnToggle.setTextColor(Color.WHITE)
+            btnToggle.text = "⚡ TAP TO ACTIVATE"
+            btnToggle.background = createCyberButtonBg(colorDarkBlue, Color.GRAY, false)
+            btnToggle.setTextColor(Color.GRAY)
+            statusText.text = "STATUS: STANDBY"
+            statusText.setTextColor(Color.GRAY)
             runShell("settings put global low_power 1; cmd power set-fixed-performance-mode-enabled false; settings put secure pointer_speed 0; settings put system pointer_speed 0; settings put global window_animation_scale 1.0; settings put global transition_animation_scale 1.0; settings put global animator_duration_scale 1.0; settings put system peak_refresh_rate 60.0; settings put system min_refresh_rate 60.0; setprop debug.egl.swapinterval 1; wm density reset") 
-            Toast.makeText(this, "SYSTEM RESET", Toast.LENGTH_SHORT).show()
+            triggerGlitchEffect(rootLayout)
         }
     }
 
-    // --- DESAIN TOMBOL PREMIUM ---
-    private fun createPremiumButton(textStr: String, bgColorHex: String, textColorHex: String): Button {
+    // --- ANIMASI PETIR BIRU NYAMBER ---
+    private fun triggerLightningStrike() {
+        val root = window.decorView as ViewGroup
+        
+        // Overlay Biru Kilat
+        val flashView = View(this).apply {
+            setBackgroundColor(Color.parseColor("#6600F0FF"))
+        }
+        root.addView(flashView, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+
+        // Gambar Petir Biru
+        val lightningView = LightningView(this)
+        root.addView(lightningView, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+
+        // Animasi Hilang
+        flashView.animate().alpha(0f).setDuration(400).withEndAction {
+            root.removeView(flashView)
+            root.removeView(lightningView)
+        }.start()
+
+        // Efek Layar Getar (Glitch Shake)
+        val shake = android.view.animation.TranslateAnimation(-10f, 10f, -10f, 10f)
+        shake.duration = 300
+        shake.repeatCount = 1
+        root.startAnimation(shake)
+    }
+
+    private fun triggerGlitchEffect(view: View) {
+        val shake = android.view.animation.TranslateAnimation(-20f, 20f, 0f, 0f)
+        shake.duration = 100
+        shake.repeatCount = 2
+        view.startAnimation(shake)
+    }
+
+    // --- CUSTOM VIEW: PETIR BIRU ---
+    inner class LightningView(context: android.content.Context) : View(context) {
+        override fun onDraw(canvas: Canvas) {
+            super.onDraw(canvas)
+            val paint = Paint().apply {
+                color = Color.WHITE
+                strokeWidth = 8f
+                style = Paint.Style.STROKE
+                setShadowLayer(25f, 0f, 0f, colorNeonBlue) // Glow Biru
+            }
+            val path = Path()
+            val w = width.toFloat()
+            val h = height.toFloat()
+            
+            // Gambar 2 Petir Bercabang
+            path.moveTo(w * 0.3f, 0f)
+            path.lineTo(w * 0.4f, h * 0.4f)
+            path.lineTo(w * 0.2f, h * 0.6f)
+            path.lineTo(w * 0.5f, h)
+
+            path.moveTo(w * 0.7f, 0f)
+            path.lineTo(w * 0.6f, h * 0.5f)
+            path.lineTo(w * 0.8f, h * 0.7f)
+            path.lineTo(w * 0.65f, h)
+            
+            canvas.drawPath(path, paint)
+        }
+    }
+
+    // --- DESAIN KARTU & TOMBOL CYBERPUNK ---
+    private fun createCyberPanel(): GradientDrawable {
+        return GradientDrawable().apply {
+            setColor(colorDarkBlue)
+            setCornerRadius(15f)
+            setStroke(2, colorNeonBlue) // Border biru neon
+        }
+    }
+
+    private fun createCyberButtonBg(bgColor: Int, strokeColor: Int, glow: Boolean): GradientDrawable {
+        return GradientDrawable().apply {
+            setColor(bgColor)
+            setCornerRadius(10f)
+            setStroke(3, strokeColor)
+            if (glow) {
+                // Efek glow di tombol (jika didukung)
+            }
+        }
+    }
+
+    private fun createCyberButton(textStr: String, bgColor: Int, textColor: Int, glow: Boolean): Button {
         return Button(this).apply {
             text = textStr
-            setTextColor(Color.parseColor(textColorHex))
-            textSize = 15f
-            setTypeface(null, Typeface.BOLD)
-            setBackgroundColor(Color.TRANSPARENT)
+            setTextColor(textColor)
+            textSize = 16f
+            typeface = Typeface.create("sans-serif-black", Typeface.BOLD)
+            background = createCyberButtonBg(bgColor, if (glow) colorNeonBlue else Color.parseColor("#333333"), glow)
             letterSpacing = 0.1f
-            
-            val drawable = GradientDrawable().apply {
-                setColor(Color.parseColor(bgColorHex))
-                setCornerRadius(50f) // Ujung membulat (Pil)
-                if (bgColorHex == "#111115" || bgColorHex == "#1A1A1A") {
-                    setStroke(3, Color.parseColor("#333333"))
-                } else if (bgColorHex == "#CC0000") {
-                    setStroke(3, Color.parseColor("#FF3333"))
-                } else if (bgColorHex == "#00FFCC") {
-                    setStroke(3, Color.parseColor("#FFFFFF"))
-                }
-            }
-            background = drawable
             
             val params = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
             )
-            params.setMargins(0, 0, 0, 40)
+            params.setMargins(0, 0, 0, 30)
             layoutParams = params
             setPadding(0, 35, 0, 35)
         }
@@ -289,8 +358,6 @@ class MainActivity : Activity() {
             } else {
                 Shizuku.requestPermission(0)
             }
-        } catch (e: Exception) {
-            // Abaikan error
-        }
+        } catch (e: Exception) { }
     }
-}
+} 
