@@ -6,324 +6,440 @@ import android.content.pm.PackageManager
 import android.graphics.*
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup // <--- INI YANG KURANG TADI
-import android.view.animation.OvershootInterpolator
+import android.view.ViewGroup
 import android.widget.*
 import rikka.shizuku.Shizuku
-import kotlin.random.Random
+import java.util.Random
 
 class MainActivity : Activity() {
 
-    private var isSystemOn = false
-
-    // Palet Warna: Hitam & Biru Neon
-    private val colorBlack = Color.parseColor("#050505")
-    private val colorDarkBlue = Color.parseColor("#0A1128")
-    private val colorNeonBlue = Color.parseColor("#00F0FF")
-    private val colorNeonBlueGlow = Color.parseColor("#8800F0FF")
-    private val colorRed = Color.parseColor("#FF0033")
+    // Palet Warna Beringin
+    private val bgDark = Color.parseColor("#05100B")
+    private val cardBg = Color.parseColor("#0D1F16")
+    private val neonGreen = Color.parseColor("#00FF88")
+    private val softGold = Color.parseColor("#D4AF37")
+    private val textGray = Color.parseColor("#A3B8AD")
+    private val colorRed = Color.parseColor("#E63946")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setupBaseLayout()
-    }
-
-    private fun setupBaseLayout() {
-        val rootLayout = FrameLayout(this).apply {
-            setBackgroundColor(colorBlack)
-        }
-
-        val loginLayout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(60, 60, 60, 60)
-            gravity = Gravity.CENTER
-        }
-
-        val title = TextView(this).apply {
-            text = "DSXCFG"
-            setTextColor(colorNeonBlue)
-            textSize = 60f
-            typeface = Typeface.create("sans-serif-black", Typeface.BOLD)
-            gravity = Gravity.CENTER
-            letterSpacing = 0.1f
-            setShadowLayer(25f, 0f, 0f, colorNeonBlue)
-        }
-
-        val subTitle = TextView(this).apply {
-            text = "SYSTEM BREACH PROTOCOL"
-            setTextColor(Color.parseColor("#88FFFFFF"))
-            textSize = 14f
-            letterSpacing = 0.3f
-            gravity = Gravity.CENTER
-            setPadding(0, 10, 0, 80)
-        }
-
-        val inputKey = EditText(this).apply {
-            hint = "ENTER ACCESS KEY"
-            setTextColor(colorNeonBlue)
-            setHintTextColor(Color.parseColor("#4400F0FF"))
-            setBackgroundColor(colorDarkBlue)
-            setPadding(40, 40, 40, 40)
-            gravity = Gravity.CENTER
-            letterSpacing = 0.2f
-            val params = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-            params.setMargins(0, 0, 0, 50)
-            layoutParams = params
-        }
-
-        val btnLogin = createCyberButton("INITIALIZE ACCESS", colorDarkBlue, colorNeonBlue, true)
-        btnLogin.setOnClickListener {
-            val key = inputKey.text.toString().trim()
-            val validKeys = mapOf("DSX-1JAM-BG" to 1, "DSX-3JAM-PRO" to 3, "DSX-1BULAN-VIP" to 720)
-            if (validKeys.containsKey(key)) {
-                triggerLightningStrike()
-                rootLayout.postDelayed({ showDashboard() }, 800)
-            } else {
-                triggerGlitchEffect(rootLayout)
-                Toast.makeText(this, "ACCESS DENIED", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        val watermarkLogin = TextView(this).apply {
-            text = "WA Admin: 0887437833371\nTikTok: ClayX!"
-            setTextColor(Color.parseColor("#333333"))
-            textSize = 12f
-            gravity = Gravity.CENTER
-            setPadding(0, 100, 0, 0)
-        }
-
-        loginLayout.addView(title)
-        loginLayout.addView(subTitle)
-        loginLayout.addView(inputKey)
-        loginLayout.addView(btnLogin)
-        loginLayout.addView(watermarkLogin)
-        
-        rootLayout.addView(loginLayout)
-        setContentView(rootLayout)
-
-        loginLayout.alpha = 0f
-        loginLayout.translationY = -50f
-        loginLayout.animate().alpha(1f).translationY(0f).setDuration(1000).start()
-
-        rootLayout.postDelayed({ triggerLightningStrike() }, 300)
+        showDashboard()
     }
 
     private fun showDashboard() {
-        val rootLayout = FrameLayout(this).apply {
-            setBackgroundColor(colorBlack)
-        }
+        val root = FrameLayout(this).apply { setBackgroundColor(bgDark) }
+
+        // Background Daun Jatuh (Beringin Vibe)
+        val leafView = FallingLeavesView(this)
+        root.addView(leafView, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
 
         val scrollView = ScrollView(this)
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(40, 100, 40, 40)
-            gravity = Gravity.CENTER_HORIZONTAL
+            setPadding(30, 50, 30, 30)
         }
 
-        val headerPanel = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            background = createCyberPanel()
-            setPadding(40, 40, 40, 40)
+        // --- 1. TOP STATS (3 KOTAK) ---
+        val statsRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER
+            val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            lp.setMargins(0, 0, 0, 20)
+            layoutParams = lp
         }
-        
-        val title = TextView(this).apply {
-            text = "DSX CORE"
-            setTextColor(colorNeonBlue)
-            textSize = 28f
-            typeface = Typeface.create("sans-serif-black", Typeface.BOLD)
-            setShadowLayer(10f, 0f, 0f, colorNeonBlue)
+
+        val stat1 = createStatBox("🌿", "12", "MODULE")
+        val stat2 = createStatBox("👤", "ADMIN", "ROLE")
+        val stat3 = createStatBox("🟢", "ONLINE", "STATUS")
+
+        val lpStat = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        lpStat.setMargins(5, 0, 5, 0)
+        statsRow.addView(stat1, lpStat)
+        statsRow.addView(stat2, lpStat)
+        statsRow.addView(stat3, lpStat)
+
+
+        // --- 2. PROFILE CARD ---
+        val profileCard = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            background = createCardBg(neonGreen)
+            setPadding(30, 30, 30, 30)
+            val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            lp.setMargins(0, 0, 0, 20)
+            layoutParams = lp
         }
-        
-        val statusText = TextView(this).apply {
-            text = "STATUS: STANDBY"
-            setTextColor(Color.GRAY)
-            textSize = 14f
-            letterSpacing = 0.2f
+
+        val profileRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+        }
+
+        val avatar = TextView(this).apply {
+            text = "👤"
+            textSize = 40f
+            setTextColor(neonGreen)
+        }
+
+        val nameCol = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(20, 0, 0, 0)
+            val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            layoutParams = lp
+        }
+
+        val nameText = TextView(this).apply {
+            text = "DSX BRINGIN"
+            setTextColor(Color.WHITE)
+            textSize = 20f
+            typeface = Typeface.DEFAULT_BOLD
+        }
+
+        val badgeRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
             setPadding(0, 10, 0, 0)
         }
+        val badgeAdmin = createBadge("ADMIN", neonGreen)
+        val badgeSecured = createBadge("SECURED", softGold)
+        val lpBadge = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        lpBadge.setMargins(0, 0, 10, 0)
+        badgeRow.addView(badgeAdmin, lpBadge)
+        badgeRow.addView(badgeSecured)
 
-        headerPanel.addView(title)
-        headerPanel.addView(statusText)
+        nameCol.addView(nameText)
+        nameCol.addView(badgeRow)
 
-        val btnToggle = createCyberButton("⚡ TAP TO ACTIVATE", colorDarkBlue, colorNeonBlue, true)
-        btnToggle.textSize = 20f
-        val toggleParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
-        toggleParams.setMargins(0, 40, 0, 40)
-        btnToggle.layoutParams = toggleParams
+        val statusPill = TextView(this).apply {
+            text = "● ONLINE"
+            setTextColor(Color.BLACK)
+            textSize = 10f
+            typeface = Typeface.DEFAULT_BOLD
+            background = createPillBg(neonGreen)
+            setPadding(20, 10, 20, 10)
+        }
 
-        val btnFF = createCyberButton("LAUNCH FREE FIRE", colorDarkBlue, Color.WHITE, false)
-        val btnOpt = createCyberButton("BOOST RAM & CPU", colorDarkBlue, Color.WHITE, false)
-        val btnAim = createCyberButton("OVERRIDE TOUCH", colorDarkBlue, Color.WHITE, false)
-        val btnDrag = createCyberButton("ZERO DELAY UI", colorDarkBlue, Color.WHITE, false)
-        val btnReset = createCyberButton("PURGE SYSTEM", colorDarkBlue, colorRed, true)
+        profileRow.addView(avatar)
+        profileRow.addView(nameCol)
+        profileRow.addView(statusPill)
 
-        val watermarkDash = TextView(this).apply {
-            text = "POWERED BY DSX PROJECT"
-            setTextColor(Color.parseColor("#333333"))
+        val expireText = TextView(this).apply {
+            text = "⌛ ACCESS EXPIRES: LIFETIME"
+            setTextColor(textGray)
             textSize = 12f
-            letterSpacing = 0.2f
-            setPadding(0, 60, 0, 0)
+            setPadding(0, 20, 0, 0)
         }
 
-        layout.addView(headerPanel)
-        layout.addView(btnToggle)
-        layout.addView(btnFF)
-        layout.addView(btnOpt)
-        layout.addView(btnAim)
-        layout.addView(btnDrag)
-        layout.addView(btnReset)
-        layout.addView(watermarkDash)
-        
+        profileCard.addView(profileRow)
+        profileCard.addView(expireText)
+
+
+        // --- 3. BANNER IMAGE (Ganti pakai Kotak Teks Glow) ---
+        val bannerCard = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            background = createCardBg(softGold)
+            gravity = Gravity.CENTER
+            setPadding(0, 50, 0, 50)
+            val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            lp.setMargins(0, 0, 0, 20)
+            layoutParams = lp
+        }
+        val bannerText = TextView(this).apply {
+            text = "DSX BRINGIN"
+            setTextColor(softGold)
+            textSize = 30f
+            typeface = Typeface.create("serif", Typeface.BOLD)
+            setShadowLayer(15f, 0f, 0f, softGold)
+        }
+        bannerCard.addView(bannerText)
+
+
+        // --- 4. ATTACK SEQUENCE CARD ---
+        val attackCard = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            background = createCardBg(neonGreen)
+            setPadding(30, 30, 30, 30)
+            val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            lp.setMargins(0, 0, 0, 20)
+            layoutParams = lp
+        }
+
+        val attackTitle = TextView(this).apply {
+            text = "⚡ SYSTEM SEQUENCE"
+            setTextColor(neonGreen)
+            textSize = 16f
+            typeface = Typeface.DEFAULT_BOLD
+            setPadding(0, 0, 0, 20)
+        }
+
+        // Toggle Row (Tiruan Number/Group)
+        val toggleRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            background = createInputBg()
+            setPadding(10, 10, 10, 10)
+            val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            lp.setMargins(0, 0, 0, 20)
+            layoutParams = lp
+        }
+        val btnMode1 = TextView(this).apply {
+            text = "ACTIVE"
+            setTextColor(Color.BLACK)
+            gravity = Gravity.CENTER
+            background = createPillBg(neonGreen)
+            setPadding(20, 10, 20, 10)
+            val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            layoutParams = lp
+        }
+        val btnMode2 = TextView(this).apply {
+            text = "STANDBY"
+            setTextColor(textGray)
+            gravity = Gravity.CENTER
+            val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            layoutParams = lp
+        }
+        toggleRow.addView(btnMode1)
+        toggleRow.addView(btnMode2)
+
+        val inputLabel = TextView(this).apply {
+            text = "⌖ TARGET DESTINATION"
+            setTextColor(neonGreen)
+            textSize = 12f
+            setPadding(0, 0, 0, 10)
+        }
+
+        val etInput = EditText(this).apply {
+            hint = "Masukkan nomor target / Key..."
+            setTextColor(Color.WHITE)
+            setHintTextColor(textGray)
+            background = createInputBg()
+            setPadding(30, 30, 30, 30)
+            val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            lp.setMargins(0, 0, 0, 20)
+            layoutParams = lp
+        }
+
+        val actionRow = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+        }
+
+        val btnLaunch = Button(this).apply {
+            text = "LAUNCH FF"
+            setTextColor(Color.WHITE)
+            typeface = Typeface.DEFAULT_BOLD
+            background = createRoundBtn(neonGreen)
+            setPadding(0, 25, 0, 25)
+            val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            lp.setMargins(0, 0, 10, 0)
+            layoutParams = lp
+        }
+
+        val btnBoost = Button(this).apply {
+            text = "BOOST FPS"
+            setTextColor(Color.WHITE)
+            typeface = Typeface.DEFAULT_BOLD
+            background = createRoundBtn(softGold)
+            setPadding(0, 25, 0, 25)
+            val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            lp.setMargins(10, 0, 0, 0)
+            layoutParams = lp
+        }
+
+        actionRow.addView(btnLaunch)
+        actionRow.addView(btnBoost)
+
+        attackCard.addView(attackTitle)
+        attackCard.addView(toggleRow)
+        attackCard.addView(inputLabel)
+        attackCard.addView(etInput)
+        attackCard.addView(actionRow)
+
+        // --- 5. BOTTOM NAVIGATION (Tiruan) ---
+        val bottomNav = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            background = createCardBg(neonGreen)
+            setPadding(0, 20, 0, 20)
+            gravity = Gravity.CENTER
+        }
+        val navItems = listOf("HOME", "RAT", "INFO", "TOOLS", "THEME")
+        for (item in navItems) {
+            val tv = TextView(this).apply {
+                text = item
+                setTextColor(if (item == "HOME") neonGreen else textGray)
+                textSize = 10f
+                typeface = Typeface.DEFAULT_BOLD
+                gravity = Gravity.CENTER
+                val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                layoutParams = lp
+            }
+            bottomNav.addView(tv)
+        }
+
+        // Susun semua ke layout utama
+        layout.addView(statsRow)
+        layout.addView(profileCard)
+        layout.addView(bannerCard)
+        layout.addView(attackCard)
+        layout.addView(bottomNav)
+
         scrollView.addView(layout)
-        rootLayout.addView(scrollView)
-        setContentView(rootLayout)
+        root.addView(scrollView)
+        setContentView(root)
 
-        for (i in 0 until layout.childCount) {
-            val child = layout.getChildAt(i)
-            child.alpha = 0f
-            child.translationX = -100f
-            child.animate().alpha(1f).translationX(0f).setStartDelay((i * 100).toLong()).setDuration(500).start()
-        }
+        // Animasi Masuk
+        layout.alpha = 0f
+        layout.translationY = 50f
+        layout.animate().alpha(1f).translationY(0f).setDuration(1000).start()
 
-        btnToggle.setOnClickListener {
+        // --- LOGIKA TOMBOL ---
+        var isSystemOn = false
+        btnBoost.setOnClickListener {
             isSystemOn = !isSystemOn
             if (isSystemOn) {
-                triggerLightningStrike()
-                btnToggle.text = "⚡ SYSTEM ONLINE"
-                btnToggle.background = createCyberButtonBg(colorDarkBlue, colorNeonBlue, true)
-                btnToggle.setTextColor(colorNeonBlue)
-                statusText.text = "STATUS: OVERCLOCKED"
-                statusText.setTextColor(colorNeonBlue)
-                
+                btnBoost.text = "ON"
+                btnBoost.background = createRoundBtn(neonGreen)
                 runShell("am kill-all; pm trim-caches 999G; settings put global low_power 0; cmd power set-fixed-performance-mode-enabled true; settings put secure pointer_speed 7; settings put system pointer_speed 7; settings put global window_animation_scale 0.0; settings put global transition_animation_scale 0.0; settings put global animator_duration_scale 0.0; setprop debug.egl.swapinterval 0; settings put system peak_refresh_rate 120.0; settings put system min_refresh_rate 120.0")
             } else {
-                btnToggle.text = "⚡ TAP TO ACTIVATE"
-                btnToggle.background = createCyberButtonBg(colorDarkBlue, Color.GRAY, false)
-                btnToggle.setTextColor(Color.GRAY)
-                statusText.text = "STATUS: STANDBY"
-                statusText.setTextColor(Color.GRAY)
-                Toast.makeText(this, "SYSTEM STANDBY", Toast.LENGTH_SHORT).show()
+                btnBoost.text = "OFF"
+                btnBoost.background = createRoundBtn(colorRed)
+                runShell("settings put global low_power 1; cmd power set-fixed-performance-mode-enabled false; settings put secure pointer_speed 0; settings put system pointer_speed 0; settings put global window_animation_scale 1.0; settings put global transition_animation_scale 1.0; settings put global animator_duration_scale 1.0; settings put system peak_refresh_rate 60.0; settings put system min_refresh_rate 60.0; setprop debug.egl.swapinterval 1; wm density reset")
             }
         }
 
-        btnFF.setOnClickListener {
+        btnLaunch.setOnClickListener {
             val intent = packageManager.getLaunchIntentForPackage("com.dts.freefireth")
-            if (intent != null) startActivity(intent) else Toast.makeText(this, "FF NOT INSTALLED", Toast.LENGTH_SHORT).show()
-        }
-
-        btnOpt.setOnClickListener { runShell("am kill-all; pm trim-caches 999G") }
-        btnAim.setOnClickListener { runShell("settings put secure pointer_speed 7; settings put system pointer_speed 7; settings put system touch.pressure.scale 0.0") }
-        btnDrag.setOnClickListener { runShell("settings put global window_animation_scale 0.0; settings put global transition_animation_scale 0.0; settings put global animator_duration_scale 0.0; setprop debug.egl.swapinterval 0") }
-        
-        btnReset.setOnClickListener { 
-            isSystemOn = false
-            btnToggle.text = "⚡ TAP TO ACTIVATE"
-            btnToggle.background = createCyberButtonBg(colorDarkBlue, Color.GRAY, false)
-            btnToggle.setTextColor(Color.GRAY)
-            statusText.text = "STATUS: STANDBY"
-            statusText.setTextColor(Color.GRAY)
-            runShell("settings put global low_power 1; cmd power set-fixed-performance-mode-enabled false; settings put secure pointer_speed 0; settings put system pointer_speed 0; settings put global window_animation_scale 1.0; settings put global transition_animation_scale 1.0; settings put global animator_duration_scale 1.0; settings put system peak_refresh_rate 60.0; settings put system min_refresh_rate 60.0; setprop debug.egl.swapinterval 1; wm density reset") 
-            triggerGlitchEffect(rootLayout)
+            if (intent != null) startActivity(intent) else Toast.makeText(this, "Free Fire tidak terinstall!", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun triggerLightningStrike() {
-        val root = window.decorView as ViewGroup
-        
-        val flashView = View(this).apply {
-            setBackgroundColor(Color.parseColor("#6600F0FF"))
-        }
-        root.addView(flashView, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
-
-        val lightningView = LightningView(this)
-        root.addView(lightningView, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
-
-        flashView.animate().alpha(0f).setDuration(400).withEndAction {
-            root.removeView(flashView)
-            root.removeView(lightningView)
-        }.start()
-
-        val shake = android.view.animation.TranslateAnimation(-10f, 10f, -10f, 10f)
-        shake.duration = 300
-        shake.repeatCount = 1
-        root.startAnimation(shake)
-    }
-
-    private fun triggerGlitchEffect(view: View) {
-        val shake = android.view.animation.TranslateAnimation(-20f, 20f, 0f, 0f)
-        shake.duration = 100
-        shake.repeatCount = 2
-        view.startAnimation(shake)
-    }
-
-    inner class LightningView(context: android.content.Context) : View(context) {
-        override fun onDraw(canvas: Canvas) {
-            super.onDraw(canvas)
-            val paint = Paint().apply {
-                color = Color.WHITE
-                strokeWidth = 8f
-                style = Paint.Style.STROKE
-                setShadowLayer(25f, 0f, 0f, colorNeonBlue)
-            }
-            val path = Path()
-            val w = width.toFloat()
-            val h = height.toFloat()
+    // ==========================================
+    // KOMPONEN DESAIN
+    // ==========================================
+    private fun createStatBox(icon: String, value: String, label: String): LinearLayout {
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            background = createCardBg(neonGreen)
+            setPadding(20, 20, 20, 20)
+            gravity = Gravity.CENTER
             
-            path.moveTo(w * 0.3f, 0f)
-            path.lineTo(w * 0.4f, h * 0.4f)
-            path.lineTo(w * 0.2f, h * 0.6f)
-            path.lineTo(w * 0.5f, h)
-
-            path.moveTo(w * 0.7f, 0f)
-            path.lineTo(w * 0.6f, h * 0.5f)
-            path.lineTo(w * 0.8f, h * 0.7f)
-            path.lineTo(w * 0.65f, h)
+            val ic = TextView(this@MainActivity).apply { text = icon; textSize = 16f; gravity = Gravity.CENTER }
+            val valTxt = TextView(this@MainActivity).apply { text = value; setTextColor(Color.WHITE); typeface = Typeface.DEFAULT_BOLD; textSize = 14f; gravity = Gravity.CENTER }
+            val lblTxt = TextView(this@MainActivity).apply { text = label; setTextColor(textGray); textSize = 10f; gravity = Gravity.CENTER }
             
-            canvas.drawPath(path, paint)
+            addView(ic)
+            addView(valTxt)
+            addView(lblTxt)
         }
     }
 
-    private fun createCyberPanel(): GradientDrawable {
+    private fun createBadge(text: String, color: Int): TextView {
+        return TextView(this).apply {
+            this.text = text
+            setTextColor(Color.BLACK)
+            textSize = 9f
+            typeface = Typeface.DEFAULT_BOLD
+            background = createPillBg(color)
+            setPadding(15, 5, 15, 5)
+        }
+    }
+
+    private fun createCardBg(strokeColor: Int): GradientDrawable {
         return GradientDrawable().apply {
-            setColor(colorDarkBlue)
+            setColor(cardBg)
             setCornerRadius(15f)
-            setStroke(2, colorNeonBlue)
-        }
-    }
-
-    private fun createCyberButtonBg(bgColor: Int, strokeColor: Int, glow: Boolean): GradientDrawable {
-        return GradientDrawable().apply {
-            setColor(bgColor)
-            setCornerRadius(10f)
             setStroke(3, strokeColor)
         }
     }
 
-    private fun createCyberButton(textStr: String, bgColor: Int, textColor: Int, glow: Boolean): Button {
-        return Button(this).apply {
-            text = textStr
-            setTextColor(textColor)
-            textSize = 16f
-            typeface = Typeface.create("sans-serif-black", Typeface.BOLD)
-            background = createCyberButtonBg(bgColor, if (glow) colorNeonBlue else Color.parseColor("#333333"), glow)
-            letterSpacing = 0.1f
-            
-            val params = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-            params.setMargins(0, 0, 0, 30)
-            layoutParams = params
-            setPadding(0, 35, 0, 35)
+    private fun createInputBg(): GradientDrawable {
+        return GradientDrawable().apply {
+            setColor(Color.parseColor("#05100B"))
+            setCornerRadius(20f)
+            setStroke(2, textGray)
         }
     }
 
+    private fun createPillBg(color: Int): GradientDrawable {
+        return GradientDrawable().apply {
+            setColor(color)
+            setCornerRadius(50f)
+        }
+    }
+
+    private fun createRoundBtn(color: Int): GradientDrawable {
+        return GradientDrawable().apply {
+            setColor(color)
+            setCornerRadius(20f)
+        }
+    }
+
+    // ==========================================
+    // ANIMASI DAUN JATUH
+    // ==========================================
+    inner class FallingLeavesView(context: android.content.Context) : View(context) {
+        private val paint = Paint().apply { isAntiAlias = true }
+        private val leaves = mutableListOf<Leaf>()
+        private val random = Random()
+        private val handler = Handler(Looper.getMainLooper())
+        private val runnable = object : Runnable {
+            override fun run() {
+                updateLeaves()
+                invalidate()
+                handler.postDelayed(this, 30)
+            }
+        }
+
+        init { handler.post(runnable) }
+
+        override fun onDraw(canvas: Canvas) {
+            super.onDraw(canvas)
+            for (leaf in leaves) {
+                paint.color = leaf.color
+                paint.alpha = (leaf.alpha * 255).toInt()
+                // Gambar bentuk daun (oval lonjong)
+                canvas.save()
+                canvas.rotate(leaf.rotation, leaf.x, leaf.y)
+                canvas.drawOval(leaf.x, leaf.y, leaf.x + leaf.size * 2, leaf.y + leaf.size, paint)
+                canvas.restore()
+            }
+        }
+
+        private fun updateLeaves() {
+            if (leaves.size < 30) {
+                leaves.add(Leaf(
+                    x = random.nextFloat() * width,
+                    y = -50f,
+                    speed = random.nextFloat() * 2f + 1f,
+                    size = random.nextFloat() * 4f + 2f,
+                    alpha = random.nextFloat() * 0.4f + 0.2f,
+                    color = if (random.nextBoolean()) neonGreen else softGold,
+                    drift = (random.nextFloat() - 0.5f) * 1.5f,
+                    rotation = random.nextFloat() * 360f
+                ))
+            }
+
+            val iterator = leaves.iterator()
+            while (iterator.hasNext()) {
+                val leaf = iterator.next()
+                leaf.y += leaf.speed
+                leaf.x += Math.sin(leaf.y / 40.0).toFloat() * leaf.drift
+                leaf.rotation += 1f
+                if (leaf.y > height + 50) iterator.remove()
+            }
+        }
+
+        override fun onDetachedFromWindow() {
+            super.onDetachedFromWindow()
+            handler.removeCallbacks(runnable)
+        }
+    }
+
+    data class Leaf(var x: Float, var y: Float, val speed: Float, val size: Float, val alpha: Float, val color: Int, val drift: Float, var rotation: Float)
+
+    // ==========================================
+    // SHIZUKU
+    // ==========================================
     private fun runShell(cmd: String) {
         try {
             if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
