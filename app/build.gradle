@@ -30,7 +30,11 @@ android {
 }
 
 dependencies {
+    // Library dasar
     implementation 'androidx.appcompat:appcompat:1.6.1'
+    // Kita paksa fragment ke versi stabil biar gak error
+    implementation 'androidx.fragment:fragment:1.6.2'
+    // Shizuku
     implementation 'dev.rikka.shizuku:api:13.0.0'
     implementation 'dev.rikka.shizuku:provider:13.0.0'
 }
